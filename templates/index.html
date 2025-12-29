@@ -1,0 +1,471 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Universal Website Scraper</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: #f5f5f5;
+            color: #333;
+            line-height: 1.6;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            padding: 30px;
+        }
+        
+        h1 {
+            color: #2c3e50;
+            margin-bottom: 30px;
+            font-size: 2em;
+        }
+        
+        .input-section {
+            margin-bottom: 30px;
+        }
+        
+        .input-group {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+        
+        input[type="url"] {
+            flex: 1;
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 4px;
+            font-size: 16px;
+        }
+        
+        input[type="url"]:focus {
+            outline: none;
+            border-color: #3498db;
+        }
+        
+        button {
+            padding: 12px 24px;
+            background: #3498db;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 500;
+        }
+        
+        button:hover {
+            background: #2980b9;
+        }
+        
+        button:disabled {
+            background: #95a5a6;
+            cursor: not-allowed;
+        }
+        
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 20px;
+            color: #3498db;
+        }
+        
+        .loading.active {
+            display: block;
+        }
+        
+        .error {
+            display: none;
+            padding: 15px;
+            background: #fee;
+            border-left: 4px solid #e74c3c;
+            color: #c0392b;
+            margin-bottom: 20px;
+            border-radius: 4px;
+        }
+        
+        .error.active {
+            display: block;
+        }
+        
+        .results {
+            display: none;
+        }
+        
+        .results.active {
+            display: block;
+        }
+        
+        .meta-info {
+            background: #ecf0f1;
+            padding: 15px;
+            border-radius: 4px;
+            margin-bottom: 20px;
+        }
+        
+        .meta-info h2 {
+            font-size: 1.2em;
+            margin-bottom: 10px;
+            color: #2c3e50;
+        }
+        
+        .meta-info p {
+            margin: 5px 0;
+        }
+        
+        .sections {
+            margin-top: 30px;
+        }
+        
+        .section {
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            margin-bottom: 15px;
+            overflow: hidden;
+        }
+        
+        .section-header {
+            padding: 15px;
+            background: #f8f9fa;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: background 0.2s;
+        }
+        
+        .section-header:hover {
+            background: #e9ecef;
+        }
+        
+        .section-title {
+            font-weight: 600;
+            color: #2c3e50;
+        }
+        
+        .section-type {
+            background: #3498db;
+            color: white;
+            padding: 4px 8px;
+            border-radius: 3px;
+            font-size: 0.85em;
+            text-transform: uppercase;
+        }
+        
+        .section-content {
+            display: none;
+            padding: 20px;
+            background: white;
+        }
+        
+        .section-content.active {
+            display: block;
+        }
+        
+        .content-item {
+            margin-bottom: 15px;
+        }
+        
+        .content-item h3 {
+            font-size: 1em;
+            color: #555;
+            margin-bottom: 8px;
+        }
+        
+        .content-item ul {
+            list-style: none;
+            padding-left: 0;
+        }
+        
+        .content-item li {
+            padding: 5px 0;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .content-item a {
+            color: #3498db;
+            text-decoration: none;
+        }
+        
+        .content-item a:hover {
+            text-decoration: underline;
+        }
+        
+        .raw-html {
+            background: #2c3e50;
+            color: #ecf0f1;
+            padding: 15px;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9em;
+            overflow-x: auto;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        
+        .download-section {
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 2px solid #eee;
+            text-align: center;
+        }
+        
+        .download-btn {
+            background: #27ae60;
+        }
+        
+        .download-btn:hover {
+            background: #229954;
+        }
+        
+        .interactions {
+            background: #fff3cd;
+            padding: 15px;
+            border-radius: 4px;
+            margin-bottom: 20px;
+            border-left: 4px solid #ffc107;
+        }
+        
+        .interactions h3 {
+            margin-bottom: 10px;
+            color: #856404;
+        }
+        
+        .interactions p {
+            margin: 5px 0;
+        }
+        
+        .errors {
+            background: #f8d7da;
+            padding: 15px;
+            border-radius: 4px;
+            margin-bottom: 20px;
+            border-left: 4px solid #dc3545;
+        }
+        
+        .errors h3 {
+            margin-bottom: 10px;
+            color: #721c24;
+        }
+        
+        .errors ul {
+            list-style: none;
+            padding-left: 0;
+        }
+        
+        .errors li {
+            padding: 5px 0;
+            color: #721c24;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🌐 Universal Website Scraper</h1>
+        
+        <div class="input-section">
+            <div class="input-group">
+                <input type="url" id="urlInput" placeholder="Enter URL (e.g., https://example.com)" />
+                <button id="scrapeBtn" onclick="scrapeUrl()">Scrape</button>
+            </div>
+        </div>
+        
+        <div class="loading" id="loading">
+            <p>Scraping website... This may take a moment.</p>
+        </div>
+        
+        <div class="error" id="error"></div>
+        
+        <div class="results" id="results">
+            <div class="meta-info" id="metaInfo"></div>
+            <div class="interactions" id="interactions"></div>
+            <div class="errors" id="errors"></div>
+            <div class="sections" id="sections"></div>
+            <div class="download-section">
+                <button class="download-btn" onclick="downloadJSON()">Download JSON</button>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        let currentResult = null;
+        
+        async function scrapeUrl() {
+            const url = document.getElementById('urlInput').value.trim();
+            
+            if (!url) {
+                showError('Please enter a URL');
+                return;
+            }
+            
+            if (!url.startsWith('http://') && !url.startsWith('https://')) {
+                showError('URL must start with http:// or https://');
+                return;
+            }
+            
+            // Show loading, hide results and error
+            document.getElementById('loading').classList.add('active');
+            document.getElementById('results').classList.remove('active');
+            document.getElementById('error').classList.remove('active');
+            document.getElementById('scrapeBtn').disabled = true;
+            
+            try {
+                const response = await fetch('/scrape', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ url: url })
+                });
+                
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.detail || 'Scraping failed');
+                }
+                
+                const data = await response.json();
+                currentResult = data.result;
+                displayResults(data.result);
+                
+            } catch (error) {
+                showError(error.message || 'An error occurred while scraping');
+            } finally {
+                document.getElementById('loading').classList.remove('active');
+                document.getElementById('scrapeBtn').disabled = false;
+            }
+        }
+        
+        function showError(message) {
+            const errorDiv = document.getElementById('error');
+            errorDiv.textContent = message;
+            errorDiv.classList.add('active');
+        }
+        
+        function displayResults(result) {
+            // Display meta info
+            const metaInfo = document.getElementById('metaInfo');
+            metaInfo.innerHTML = `
+                <h2>Page Information</h2>
+                <p><strong>URL:</strong> ${escapeHtml(result.url)}</p>
+                <p><strong>Title:</strong> ${escapeHtml(result.meta.title || 'N/A')}</p>
+                <p><strong>Description:</strong> ${escapeHtml(result.meta.description || 'N/A')}</p>
+                <p><strong>Language:</strong> ${escapeHtml(result.meta.language || 'N/A')}</p>
+                <p><strong>Scraped At:</strong> ${escapeHtml(result.scrapedAt)}</p>
+            `;
+            
+            // Display interactions
+            const interactions = document.getElementById('interactions');
+            if (result.interactions) {
+                interactions.innerHTML = `
+                    <h3>Interactions</h3>
+                    <p><strong>Clicks:</strong> ${result.interactions.clicks.length} (${result.interactions.clicks.join(', ') || 'None'})</p>
+                    <p><strong>Scrolls:</strong> ${result.interactions.scrolls}</p>
+                    <p><strong>Pages Visited:</strong> ${result.interactions.pages.length}</p>
+                `;
+            } else {
+                interactions.innerHTML = '';
+            }
+            
+            // Display errors
+            const errorsDiv = document.getElementById('errors');
+            if (result.errors && result.errors.length > 0) {
+                errorsDiv.innerHTML = `
+                    <h3>Errors</h3>
+                    <ul>
+                        ${result.errors.map(e => `<li>${escapeHtml(e.phase)}: ${escapeHtml(e.message)}</li>`).join('')}
+                    </ul>
+                `;
+            } else {
+                errorsDiv.innerHTML = '';
+            }
+            
+            // Display sections
+            const sectionsDiv = document.getElementById('sections');
+            sectionsDiv.innerHTML = result.sections.map((section, index) => `
+                <div class="section">
+                    <div class="section-header" onclick="toggleSection(${index})">
+                        <span class="section-title">${escapeHtml(section.label)}</span>
+                        <span class="section-type">${escapeHtml(section.type)}</span>
+                    </div>
+                    <div class="section-content" id="section-${index}">
+                        <div class="content-item">
+                            <h3>Headings</h3>
+                            <ul>
+                                ${section.content.headings.map(h => `<li>${escapeHtml(h)}</li>`).join('') || '<li>None</li>'}
+                            </ul>
+                        </div>
+                        <div class="content-item">
+                            <h3>Text</h3>
+                            <p>${escapeHtml(section.content.text.substring(0, 500))}${section.content.text.length > 500 ? '...' : ''}</p>
+                        </div>
+                        <div class="content-item">
+                            <h3>Links (${section.content.links.length})</h3>
+                            <ul>
+                                ${section.content.links.slice(0, 10).map(link => `<li><a href="${escapeHtml(link.href)}" target="_blank">${escapeHtml(link.text || link.href)}</a></li>`).join('') || '<li>None</li>'}
+                            </ul>
+                        </div>
+                        <div class="content-item">
+                            <h3>Images (${section.content.images.length})</h3>
+                            <ul>
+                                ${section.content.images.slice(0, 5).map(img => `<li><a href="${escapeHtml(img.src)}" target="_blank">${escapeHtml(img.alt || img.src)}</a></li>`).join('') || '<li>None</li>'}
+                            </ul>
+                        </div>
+                        <div class="content-item">
+                            <h3>Raw HTML ${section.truncated ? '(Truncated)' : ''}</h3>
+                            <div class="raw-html">${escapeHtml(section.rawHtml)}</div>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+            
+            document.getElementById('results').classList.add('active');
+        }
+        
+        function toggleSection(index) {
+            const content = document.getElementById(`section-${index}`);
+            content.classList.toggle('active');
+        }
+        
+        function downloadJSON() {
+            if (!currentResult) return;
+            
+            const dataStr = JSON.stringify(currentResult, null, 2);
+            const dataBlob = new Blob([dataStr], { type: 'application/json' });
+            const url = URL.createObjectURL(dataBlob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = `scrape-${Date.now()}.json`;
+            link.click();
+            URL.revokeObjectURL(url);
+        }
+        
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+        
+        // Allow Enter key to trigger scrape
+        document.getElementById('urlInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                scrapeUrl();
+            }
+        });
+    </script>
+</body>
+</html>
+
