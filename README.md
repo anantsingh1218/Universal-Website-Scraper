@@ -161,4 +161,3 @@ The scraper attempts to return partial results even when errors occur, rather th
 ## License
 
 This project is created for assignment purposes.
-
